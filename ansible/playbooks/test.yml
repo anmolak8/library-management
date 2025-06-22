@@ -1,0 +1,7 @@
+- name: Test Ansible on Localhost
+  hosts: webservers
+  gather_facts: false
+  tasks:
+    - name: Print hello message
+      debug:
+        msg: "✅ Ansible is running successfully on localhost!"

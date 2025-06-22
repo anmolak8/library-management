@@ -1,0 +1,75 @@
+- name: Deploy Spring Boot App with Docker
+  hosts: webservers
+  become: true
+
+  tasks:
+
+    - name: Install required system packages
+      apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      loop:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - gnupg
+        - software-properties-common
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker APT repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Install Docker
+      apt:
+        name: docker-ce
+        state: present
+        update_cache: yes
+
+    - name: Start and enable Docker
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
+
+    - name: Copy Spring Boot JAR to VM
+      copy:
+        src: files/app.jar
+        dest: /opt/app.jar
+        owner: root
+        mode: '0755'
+
+    - name: Create Dockerfile
+      copy:
+        dest: /opt/Dockerfile
+        content: |
+          FROM openjdk:17
+          COPY app.jar app.jar
+          ENTRYPOINT ["java", "-jar", "/app.jar"]
+
+    - name: Build Docker image
+      community.docker.docker_image:
+        name: springboot-app
+        source: build
+        build:
+          path: /opt
+
+    - name: Stop existing container if running
+      community.docker.docker_container:
+        name: springboot-container
+        state: absent
+        force_kill: yes
+
+    - name: Run Spring Boot container
+      community.docker.docker_container:
+        name: springboot-container
+        image: springboot-app
+        state: started
+        ports:
+          - "8081:8080"
