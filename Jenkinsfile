@@ -24,9 +24,9 @@ pipeline {
             }
         }
     }
-post {
-    always {
-        cleanWs()  // Clean workspace after build
+    post {
+        always {
+            cleanWs()  // Clean workspace
+        }
     }
-    // Remove or comment out the slackSend blocks
 }
