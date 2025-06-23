@@ -3,8 +3,8 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', 
-                url: 'https://github.com/anmolak8/library-management.git'
+                git branch: 'main',
+                url: 'https://github.com/anmolak8/library-management'
             }
         }
         stage('Build') {
@@ -22,6 +22,17 @@ pipeline {
             steps {
                 sh 'ansible-playbook ansible/playbooks/deploy.yml'
             }
+        }
+    }
+    post {
+        always {
+            cleanWs()  // Clean workspace
+        }
+        success {
+            slackSend message: "✅ Build Success: ${env.JOB_NAME} - ${env.BUILD_URL}"
+        }
+        failure {
+            slackSend message: "❌ Build Failed: ${env.JOB_NAME} - ${env.BUILD_URL}"
         }
     }
 }
