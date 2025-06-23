@@ -24,15 +24,9 @@ pipeline {
             }
         }
     }
-    post {
-        always {
-            cleanWs()  // Clean workspace
-        }
-        success {
-            slackSend message: "✅ Build Success: ${env.JOB_NAME} - ${env.BUILD_URL}"
-        }
-        failure {
-            slackSend message: "❌ Build Failed: ${env.JOB_NAME} - ${env.BUILD_URL}"
-        }
+post {
+    always {
+        cleanWs()  // Clean workspace after build
     }
+    // Remove or comment out the slackSend blocks
 }
